@@ -81,6 +81,19 @@ fn main() {
 			return;
 		}
 	};
+
+	let mut pattern_no = 0;
+	for pattern in module.patterns {
+		println!("song_pattern_{}:", pattern_no);
+		pattern_no += 1;
+		for row in pattern.rows {
+			let ref channel = row.channels[0];
+			let number = channel.sample_number as i8 - 1;
+			println!("\tdefb {}", number);
+		}
+		println!("");
+	}
+	
 	
 	println!("Done!");
 }
