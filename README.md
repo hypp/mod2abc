@@ -1,13 +1,22 @@
 # mod2abc
 Simple converter for Protracker modfiles to something that can be played on Luxor ABC80
 
-Compile:
-1. Install Rust and Cargo
+License
+Released under MIT License, please see the file LICENSE.
+
+Prerequisites
+Install Rust, Cargo and git
+
 https://www.rust-lang.org/en-US/
+
 https://crates.io/
+
 Cargo is usually shipped with Rust.
-2. git clone https://github.com/hypp/mod2abc.git
-3. cargo build --release
+
+Build:
+git clone https://github.com/hypp/mod2abc.git
+cd mod2abc
+cargo build --release
 
 Usage:
 1. Create a .mod file in Protracker.
@@ -21,3 +30,4 @@ Tracker.s will include instruments.s and songs.
 5. In the program, 
 call tracker_init at initialization and
 call tracker_play each vertical blanking
+6. Profit!
