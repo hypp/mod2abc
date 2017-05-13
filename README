@@ -23,7 +23,7 @@ mod2abc --in <filename> --out song.s
 3. Edit instruments.s to your liking.
 One instrument definition per instrument used in the .mod file
 4. Create a program for Luxor ABC80 and include tracker.s
-Tracker.s will include instruments.s and songs.
+Tracker.s will include instruments.s and song.s.
 5. In the program, 
 call tracker_init at initialization and
 call tracker_play each vertical blanking
