@@ -3,9 +3,6 @@ use std::io::BufWriter;
 use std::io::Write;
 use std::io::BufReader;
 use std::io::Read;
-use std::cmp;
-use std::str::FromStr;
-use std::collections::BTreeMap;
 
 extern crate modfile;
 use modfile::ptmf;
@@ -82,18 +79,45 @@ fn main() {
 		}
 	};
 
+	let ref output_filename = args.flag_out;
+	let file = match File::create(&output_filename) {
+		Ok(file) => file,
+		Err(e) => {
+			println!("Failed to open file: '{}' Error: '{:?}'", output_filename, e);
+			return
+		}
+	};
+
+	let mut writer = BufWriter::new(&file);		
+
+
+	// Write in which order to play patterns
+	write!(writer, "song_pattern_list:\n").unwrap();
+	for i in 0..module.length {
+		let position = module.positions.data[i as usize];
+		write!(writer, "\tdefw song_pattern_{}\n", position).unwrap();
+	}
+	// Terminate list
+	write!(writer, "\tdefw 0\n").unwrap();
+	write!(writer, "\n").unwrap();
+	
+	// Write pattern data
 	let mut pattern_no = 0;
 	for pattern in module.patterns {
-		println!("song_pattern_{}:", pattern_no);
+		write!(writer,"song_pattern_{}:\n", pattern_no).unwrap();
 		pattern_no += 1;
 		for row in pattern.rows {
-			let ref channel = row.channels[0];
-			let number = channel.sample_number as i8 - 1;
-			println!("\tdefb {}", number);
+			let mut number = -1;
+			for channel in row.channels {
+				if channel.sample_number > 0 {
+					number = channel.sample_number as i8 - 1;
+					break;
+				}
+			}
+			write!(writer,"\tdefb {}\n", number).unwrap();
 		}
-		println!("");
+		write!(writer,"\n").unwrap();
 	}
-	
 	
 	println!("Done!");
 }
