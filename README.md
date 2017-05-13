@@ -14,9 +14,9 @@ https://crates.io/
 Cargo is usually shipped with Rust.
 
 Build:
-git clone https://github.com/hypp/mod2abc.git
-cd mod2abc
-cargo build --release
+1. git clone https://github.com/hypp/mod2abc.git
+2. cd mod2abc
+3. cargo build --release
 
 Usage:
 1. Create a .mod file in Protracker.
