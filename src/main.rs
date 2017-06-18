@@ -19,13 +19,14 @@ mod2abc.
 Usage: 
     mod2abc (-h | --help)
     mod2abc (-V | --version)
-    mod2abc --in=<filename> --out=<filename>
+    mod2abc --in=<filename> --out=<filename> [--only-data]
 
 Options:
     -V, --version         Show version info.
     -h, --help            Show this text.
 	--in=<filename>       Name of inputfile
 	--out=<filename>      Name of outputfile
+	--only-data           Only output rows with data
 ";
 
 #[derive(RustcDecodable, Debug)]
@@ -35,6 +36,7 @@ struct Args {
 	
 	flag_in: String,
 	flag_out: String,
+	flag_only_data: bool,
 }
 
 
@@ -101,23 +103,63 @@ fn main() {
 	write!(writer, "\tdefw 0\n").unwrap();
 	write!(writer, "\n").unwrap();
 	
+	let only_data = args.flag_only_data;
+
 	// Write pattern data
-	let mut pattern_no = 0;
-	for pattern in module.patterns {
-		write!(writer,"song_pattern_{}:\n", pattern_no).unwrap();
-		pattern_no += 1;
-		for row in pattern.rows {
-			let mut number = -1;
-			for channel in row.channels {
-				if channel.sample_number > 0 {
-					number = channel.sample_number as i8 - 1;
-					break;
+	if only_data {
+		let mut pattern_no = 0;
+		for pattern in module.patterns {
+			write!(writer,"song_pattern_{}:\n", pattern_no).unwrap();
+			pattern_no += 1;
+			let mut row_no = 63;
+			let mut last_write = 64;
+			for row in pattern.rows {
+				let mut number = -1;
+				for channel in row.channels {
+					if channel.sample_number > 0 {
+						number = channel.sample_number as i8 - 1;
+						break;
+					}
+				}
+				// Check if we should output anything
+				if number == -1 {
+					row_no -= 1;
+				} else {
+					write!(writer,"\tdefb {},{}\n", row_no, number).unwrap();
+					last_write = row_no;
+					row_no -= 1;
 				}
 			}
-			write!(writer,"\tdefb {}\n", number).unwrap();
+			// Make sure we wait the entire pattern
+			if last_write != 0 {
+				// Add a row that should never occur
+				let number = -1;
+				let row_no = -1;
+				write!(writer,"\tdefb {},{}\n", row_no, number).unwrap();				
+			}
+			write!(writer,"\n").unwrap();
 		}
-		write!(writer,"\n").unwrap();
+
+	} else {
+		// One byte for each row in the pattern,
+		// -1 used to signal that nothing happens
+		let mut pattern_no = 0;
+		for pattern in module.patterns {
+			write!(writer,"song_pattern_{}:\n", pattern_no).unwrap();
+			pattern_no += 1;
+			for row in pattern.rows {
+				let mut number = -1;
+				for channel in row.channels {
+					if channel.sample_number > 0 {
+						number = channel.sample_number as i8 - 1;
+						break;
+					}
+				}
+				write!(writer,"\tdefb {}\n", number).unwrap();
+			}
+			write!(writer,"\n").unwrap();
+		}
 	}
-	
+
 	println!("Done!");
 }
