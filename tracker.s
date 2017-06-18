@@ -3,6 +3,8 @@
 	GLOBAL tracker_start
 	GLOBAL tracker_init
 	GLOBAL tracker_play
+	GLOBAL tracker_row_countdown
+	GLOBAL tracker_pattern_countdown
 
 tracker_start:
 	call tracker_init

@@ -28,3 +28,13 @@ Tracker.s will include instruments.s and song.s.
 call tracker_init at initialization and
 call tracker_play each vertical blanking
 6. Profit!
+
+Bonus:
+When tracker_row_countdown = song_speed then the replay routine just
+started playing the next row.
+When tracker_row_countdown = 0 then the replay routine will start a 
+new row next frame.
+When tracker_pattern_countdown = TRACKER_PATTERN_SIZE then the replay
+routine just started playing a new pattern.
+When tracker_pattern_countdown = 0 then the replay routine will start a 
+new pattern next frame.
