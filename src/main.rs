@@ -114,22 +114,68 @@ fn main() {
 			let mut row_no = 63;
 			let mut last_write = 64;
 			for row in pattern.rows {
-				let mut number = -1;
-				for channel in row.channels {
+				let mut number = 0;
+				for channel in &row.channels {
 					if channel.sample_number > 0 {
-						number = channel.sample_number as i8 - 1;
+						number = channel.sample_number as u8;
 						break;
 					}
 				}
-				// Check if we should output anything
-				if number == -1 {
-					row_no -= 1;
-				} else {
-					write!(writer,"\tdefb {},{}\n", row_no, number).unwrap();
-					last_write = row_no;
-					row_no -= 1;
+				let has_instrument = number != 0;
+
+				let mut effect = -1;
+				let mut effect_param = 0;
+				for channel in &row.channels {
+					let e = (channel.effect & 0x0f00) >> 8;
+					if e == 0xf {
+						// Speed change
+						let speed = (channel.effect & 0x00ff) as u8;
+						effect = e as i8;
+						effect_param = speed;
+						break;
+					}
 				}
+				let has_effect = effect != -1;
+
+				if !has_effect && !has_instrument {
+					// Noting to do
+					row_no -= 1;
+					continue;
+				}
+
+				// Output format:
+				// %eeeiiiii %pppppppp
+				// %iiiii = 0 means no sample
+				// %eee = 0 means no effect and no %pppppppp
+
+				let mut byte1 = 0 as u8;
+				let mut byte2 = 0 as u8;
+
+				if has_effect {
+					let mut eee = 0;
+					if effect == 0xf {
+						eee = 0b00100000 as u8;
+					}
+					byte1 |= eee;
+					byte2 |= effect_param;
+					println!("effect {} {} {} {}",eee,effect,byte1,byte2)
+				}
+
+				if has_instrument {
+					let iiiii = number & 0b11111 as u8;
+					byte1 |= iiiii;
+				}
+
+				if has_effect {
+					write!(writer,"\tdefb {},{},{}\n", row_no, byte1, byte2).unwrap();
+				} else {
+					write!(writer,"\tdefb {},{}\n", row_no, byte1).unwrap();
+				}
+
+				last_write = row_no;
+				row_no -= 1;
 			}
+
 			// Make sure we wait the entire pattern
 			if last_write != 0 {
 				// Add a row that should never occur
