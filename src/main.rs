@@ -73,6 +73,15 @@ fn note_from_period(period: u16) -> String {
 	note
 }
 
+fn is_pattern_break(channels:&Vec<ptmf::Channel>) -> bool {
+	// Check for pattern break
+	let effect = channels[0].effect | channels[1].effect | channels[2].effect;
+	if effect & 0x0f00 == 0x0d00 {
+		true
+	} else {
+		false
+	}
+}
 
 fn main() {
     let args: Args = Docopt::new(USAGE)
@@ -160,6 +169,10 @@ fn main() {
 					write!(writer,"S{}", number).unwrap();
 				}
 				row_no += 1;
+
+				if is_pattern_break(&row.channels) {
+					break;
+				}
 			}
 			write!(writer,"\n").unwrap();
 
@@ -175,6 +188,10 @@ fn main() {
 					write!(writer,"{}", note).unwrap();
 				}
 				row_no += 1;
+
+				if is_pattern_break(&row.channels) {
+					break;
+				}
 			}
 			write!(writer,"\n").unwrap();
 
@@ -190,6 +207,10 @@ fn main() {
 					write!(writer,"{}", note).unwrap();
 				}
 				row_no += 1;
+
+				if is_pattern_break(&row.channels) {
+					break;
+				}
 			}
 			write!(writer,"\n").unwrap();
 
