@@ -59,10 +59,10 @@ fn note_from_period(period: u16) -> String {
 	} else {
 		let octave = found / 12;
 		let name = ptmf::NOTE_NAMES[(found % 12) as usize];
-		if octave == 2 {
+		if octave == 1 {
 			// Lower case
 			name.to_lowercase()
-		} else if octave == 3 {
+		} else if octave == 2 {
 			// Upper case
 			name.to_uppercase()			
 		} else {
