@@ -7,7 +7,8 @@ use std::io::Read;
 extern crate modfile;
 use modfile::ptmf;
 
-extern crate rustc_serialize;
+#[macro_use]
+extern crate serde_derive;
 extern crate docopt;
 use docopt::Docopt;
 
@@ -29,7 +30,7 @@ Options:
 	--format-jbe          Use format for jbe replay
 ";
 
-#[derive(RustcDecodable, Debug)]
+#[derive(Debug, Deserialize)]
 struct Args {
     flag_help: bool,
 	flag_version: bool,
@@ -85,7 +86,7 @@ fn is_pattern_break(channels:&Vec<ptmf::Channel>) -> bool {
 
 fn main() {
     let args: Args = Docopt::new(USAGE)
-                            .and_then(|d| d.decode())
+                            .and_then(|d| d.deserialize())
                             .unwrap_or_else(|e| e.exit());
 //    println!("{:?}", args);	
 	
@@ -113,10 +114,10 @@ fn main() {
 		}
 	};
 
-	let read_fn:fn (&mut Read) -> Result<ptmf::PTModule, ptmf::PTMFError> = ptmf::read_mod;
+	let read_fn:fn (&mut Read, bool) -> Result<ptmf::PTModule, ptmf::PTMFError> = ptmf::read_mod;
 
 	let mut reader = BufReader::new(&file);
-	let module = match read_fn(&mut reader) {
+	let module = match read_fn(&mut reader, true) {
 		Ok(module) => module,
 		Err(e) => {
 			println!("Failed to parse file: '{}' Error: '{:?}'", input_filename, e);
